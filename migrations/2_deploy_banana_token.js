@@ -1,0 +1,42 @@
+const BananaTokenCrowdsale = artifacts.require('./BananaTokenCrowdsale.sol');
+const BananaToken = artifacts.require('./BananaToken.sol');
+
+module.exports = function(deployer, network, accounts) {
+    //console.log('aaa');
+    //web3.eth.getBlockNumber().then(console.log);
+    //web3.eth.getBlockNumber().then(blockNumber=>web3.eth.getBlock(blockNumber)).then( block => console.log(block));
+    const openingTime = 1558863144 + 60 * 60;
+    const closingTime = 1558863144 + 60 * 60 * 24 * 365
+    //2019年5月26日 日曜日 18:32:24 GMT+09:00
+    //console.log(blockTimestamp);
+    //const BN = web3.utils.BN;
+    //const accounts = web3.eth.personal.getAccounts();
+    //const openingTime = web3.eth.getBlock(web3.eth.blockNumber).timestamp + 90; // 90秒後
+    //const closingTime = openingTime + 60 * 60 * 24 * 365; // 365日
+    //const rate = new web3.BigNumber(1000);// ETHとのトレードレート(1ETH=1000BNNT)
+    const rate = 1000;// ETHとのトレードレート(1ETH=1000BNNT)
+    const wallet = accounts[0];// ETH集めるウォレットのアドレス
+    //web3.eth.getAccounts().then(console.log);
+    //const wallet = "0x5CE9404898fb908B75f537807AB192c3577DCf18";
+    //const wallet = accounts[0];
+    return deployer
+        .then(() => {
+            return deployer.deploy(BananaToken);
+        })
+        .then(() => {
+           return deployer.deploy(
+                BananaTokenCrowdsale,
+                web3.utils.toBN(openingTime),
+                web3.utils.toBN(closingTime),
+                web3.utils.toBN(rate),
+                wallet,
+                BananaToken.address
+           );
+        })
+        .then(()=>{
+        // クラウドセールコントラクトに発行したトークンを送信
+        return BananaToken.deployed().then(instance => {
+            instance.transfer(BananaTokenCrowdsale.address, 1000000000000, {from:accounts[0]})
+           });
+        });
+};
